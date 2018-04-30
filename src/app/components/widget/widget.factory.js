@@ -43,6 +43,7 @@
         MultipleCumulativeMetricDataModel,
         DummyMetricDataModel,
         DiskLatencyMetricDataModel,
+        BccDiskLatencyMetricDataModel,
         CumulativeUtilizationMetricDataModel,
         CgroupMemoryUtilizationMetricDataModel,
         CustomMetricDataModel,
@@ -630,6 +631,25 @@
                     percentage: false,
                     integer: true
                 }
+            }, {
+                name: 'bcc.disk.dev.latency',
+                title: 'BCC Disk Latency',
+                directive: 'heatmap',
+                dataAttrName: 'data',
+                dataModelType: BccDiskLatencyMetricDataModel,
+                dataModelOptions: {
+                    name: 'bcc.disk.dev.latency'
+                },
+                size: {
+                    width: '50%',
+                    height: '750px'
+                },
+                enableVerticalResize: false,
+                group: 'Disk',
+                attrs: {
+                    percentage: false,
+                    integer: true
+                }
             }
         ];
 
@@ -1130,77 +1150,12 @@
 
     var defaultWidgets = [
         {
-            name: 'kernel.all.cpu',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'kernel.percpu.cpu',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'kernel.all.runnable',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'kernel.all.load',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'network.interface.bytes',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'network.tcpconn',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'network.interface.packets',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'network.tcp.retrans',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'mem',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'mem.vmstat.pgfault',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'kernel.all.pswitch',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'disk.iops',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'disk.bytes',
-            size: {
-                width: '50%'
-            }
-        }, {
-            name: 'disk.dev.avactive',
-            size: {
-                width: '50%'
-            }
-        }, {
             name: 'disk.dev.latency',
+            size: {
+                width: '50%'
+            }
+        }, {
+            name: 'bcc.disk.dev.latency',
             size: {
                 width: '50%'
             }
