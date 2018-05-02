@@ -1,4 +1,5 @@
 <div>
-	<div id="{{id}}-chart">No data available.</div>
-	<div id="{{id}}-details"></div>
+	<i class="fa fa-line-chart fa-5x widget-icon" ng-hide="flags.contextAvailable"></i>
+	<div id="{{id}}-chart" ng-hide="!flags.contextAvailable">No data available.</div>
+	<div id="{{id}}-details" ng-hide="!flags.contextAvailable"></div>
 </div>

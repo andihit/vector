@@ -98,6 +98,7 @@
 
         function link(scope, element) {
             scope.id = D3Service.getId();
+            scope.flags = $rootScope.flags;
 
             var heatmap = d3.heatmap()
                 .width(element.width())
