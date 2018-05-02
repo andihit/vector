@@ -642,7 +642,7 @@
                 },
                 size: {
                     width: '50%',
-                    height: '750px'
+                    height: '500px'
                 },
                 enableVerticalResize: false,
                 group: 'Disk',

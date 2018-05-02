@@ -35,10 +35,6 @@
             var lastTimestamp = -1;
             var maxRow = -1;
 
-            if (rawData.length == 0) {
-                return data;
-            }
-
             for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
@@ -58,15 +54,13 @@
                 }
             }
 
-            data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
+            // not a single value found
             if (maxRow == -1) {
-                // not a single value found, show only first row
-                data.rows = data.rows.slice(-1);
+                return data;
             }
-            else {
-                // show only rows (buckets) with values
-                data.rows = data.rows.slice(data.rows.indexOf(maxRow));
-            }
+
+            data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
+            data.rows = data.rows.slice(data.rows.indexOf(maxRow));
 
             for (var ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
                 data.columns.push(ts);
@@ -119,7 +113,10 @@
 
             scope.$on('updateMetrics', function () {
                 scope.hmData = parseHeatmapData(scope.data);
-                //console.log(hmData);
+                if(scope.hmData.values.length == 0) {
+                    document.getElementById(scope.id + '-chart').innerText = "No data available.";
+                    return;
+                }
 
                 heatmap
                     .xAxisLabels(scope.hmData.columns)
