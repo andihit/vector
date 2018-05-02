@@ -24,14 +24,20 @@
     function heatmap($rootScope, D3Service) {
 
         function parseHeatmapData(rawData) {
+            var interval = parseInt($rootScope.properties.interval);
+            var window = parseInt($rootScope.properties.window);
             var data = {
                 rows: [],
+                columns: [],
                 values: [],
-                maxValue: 0,
-                minTime: 0,
-                maxTime: 0
+                maxValue: 0
             };
+            var lastTimestamp = -1;
             var maxRow = -1;
+
+            if (rawData.length == 0) {
+                return data;
+            }
 
             for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
@@ -40,28 +46,30 @@
 
                 for(var j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
-                    data.maxTime = Math.max(data.maxTime, timestamp);
-                    data.maxValue = Math.max(data.maxValue, instance.values[j].y);
-                    if (instance.values[j].y > 0) {
-                        maxRow = Math.max(maxRow, row);
+                    if (timestamp > lastTimestamp) {
+                        lastTimestamp = timestamp;
+                    }
+                    if (instance.values[j].y > data.maxValue) {
+                        data.maxValue = instance.values[j].y;
+                    }
+                    if (instance.values[j].y > 0 && row > maxRow) {
+                        maxRow = row;
                     }
                 }
             }
 
-            // $rootScope.properties.window is measured in minutes
-            data.minTime = data.maxTime - $rootScope.properties.window * 60;
-
             data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
             if (maxRow == -1) {
                 // not a single value found, show only first row
-                data.rows = data.rows[data.rows.length - 1];
+                data.rows = data.rows.slice(-1);
             }
             else {
                 // show only rows (buckets) with values
                 data.rows = data.rows.slice(data.rows.indexOf(maxRow));
             }
 
-            for(var i = 0; i < data.maxTime - data.minTime + 1; i++) {
+            for (var ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
+                data.columns.push(ts);
                 data.values.push(new Array(data.rows.length).fill(0));
             }
 
@@ -77,8 +85,9 @@
                 for(var j = 0; j < instance.values.length; j++) {
                     if (instance.values[j].y > 0) {
                         var timestamp = parseInt(instance.values[j].x / 1000);
-                        var column = timestamp - data.minTime;
-                        data.values[column][rowIdx] = instance.values[j].y;
+                        var column = Math.ceil((timestamp - data.columns[0]) / interval);
+                        //console.log("col:",column, "ts", timestamp, "first", data.columns[0], "int", interval);
+                        data.values[column][rowIdx] += instance.values[j].y;
                     }
                 }
             }
@@ -98,8 +107,8 @@
 
             var heatmap = d3.heatmap()
                 .width(element.width())
-                .xAxisScaleTicks(5)
-                .xAxisTickFormat(timeFormat);
+                .margin({top: 45, right: 0, bottom: 0, left: 0})
+                .xAxisLabelFormat(timeFormat);
 
             /*heatmap.onMouseOver = function(d, i, j) {
 				document.getElementById(scope.id + '-details').innerText = "time: " + data.columns[i] + ", range: " + data.rows[j] + ", count: " + d;
@@ -110,7 +119,7 @@
                 //console.log(hmData);
 
                 heatmap
-                    .xAxisScale([hmData.minTime, hmData.maxTime])
+                    .xAxisLabels(hmData.columns)
                     .yAxisLabels(hmData.rows)
                     .colorScale(d3.scaleLinear()
                         .domain([0, hmData.maxValue / 2, hmData.maxValue])
