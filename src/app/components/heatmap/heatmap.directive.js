@@ -108,27 +108,29 @@
             var heatmap = d3.heatmap()
                 .width(element.width())
                 .margin({top: 45, right: 0, bottom: 0, left: 0})
-                .xAxisLabelFormat(timeFormat);
-
-            /*heatmap.onMouseOver = function(d, i, j) {
-				document.getElementById(scope.id + '-details').innerText = "time: " + data.columns[i] + ", range: " + data.rows[j] + ", count: " + d;
-            };*/
+                .xAxisLabelFormat(timeFormat)
+                .onMouseOver(function(d, i, j) {
+                    var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
+                    document.getElementById(scope.id + '-details').innerText =
+                        "time: " + timeFormat(scope.hmData.columns[i]) +
+                        ", range: " + startRange + " - " + scope.hmData.rows[j] +
+                        ", count: " + parseInt(d);
+                });
 
             scope.$on('updateMetrics', function () {
-                var hmData = parseHeatmapData(scope.data);
+                scope.hmData = parseHeatmapData(scope.data);
                 //console.log(hmData);
 
                 heatmap
-                    .xAxisLabels(hmData.columns)
-                    .yAxisLabels(hmData.rows)
+                    .xAxisLabels(scope.hmData.columns)
+                    .yAxisLabels(scope.hmData.rows)
                     .colorScale(d3.scaleLinear()
-                        .domain([0, hmData.maxValue / 2, hmData.maxValue])
+                        .domain([0, scope.hmData.maxValue / 2, scope.hmData.maxValue])
                         .range(['#F5F5DC', '#FF5032', '#E50914'])
                     );
-
                 d3.select("#" + scope.id + '-chart')
                     .html(null)
-                    .datum(hmData.values)
+                    .datum(scope.hmData.values)
                     .call(heatmap);
             });
         }
