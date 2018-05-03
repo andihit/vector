@@ -16,7 +16,7 @@
  *
  */
 
- /*global d3, nv*/
+ /*global d3*/
 
 (function () {
     'use strict';
@@ -39,12 +39,12 @@
                 return data;
             }
 
-            for (var i = 0; i < rawData.length; i++) {
+            for (let i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
                 data.rows.push(row);
 
-                for(var j = 0; j < instance.values.length; j++) {
+                for(let j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
                     if (timestamp > lastTimestamp) {
                         lastTimestamp = timestamp;
@@ -66,12 +66,12 @@
                 data.rows = data.rows.slice(data.rows.indexOf(maxRow));
             }
 
-            for (var ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
+            for (let ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
                 data.columns.push(ts);
                 data.values.push(new Array(data.rows.length).fill(null));
             }
 
-            for (var i = 0; i < rawData.length; i++) {
+            for (let i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
                 var rowIdx = data.rows.indexOf(row);
@@ -80,7 +80,7 @@
                     continue;
                 }
 
-                for(var j = 0; j < instance.values.length; j++) {
+                for(let j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
                     // TODO: remove if bug found

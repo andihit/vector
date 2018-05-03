@@ -16,8 +16,6 @@
  *
  */
 
- /*global _*/
-
  (function () {
      'use strict';
 
