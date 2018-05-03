@@ -35,6 +35,10 @@
             var lastTimestamp = -1;
             var maxRow = -1;
 
+            if (rawData.length == 0) {
+                return data;
+            }
+
             for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
@@ -54,17 +58,17 @@
                 }
             }
 
-            // not a single value found
-            if (maxRow == -1) {
-                return data;
-            }
-
             data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
-            data.rows = data.rows.slice(data.rows.indexOf(maxRow));
+            if (maxRow == -1) {
+                data.rows = data.rows.slice(-5); // show 5 rows per default
+            }
+            else {
+                data.rows = data.rows.slice(data.rows.indexOf(maxRow));
+            }
 
             for (var ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
                 data.columns.push(ts);
-                data.values.push(new Array(data.rows.length).fill(0));
+                data.values.push(new Array(data.rows.length).fill(null));
             }
 
             for (var i = 0; i < rawData.length; i++) {
@@ -77,19 +81,24 @@
                 }
 
                 for(var j = 0; j < instance.values.length; j++) {
-                    if (instance.values[j].y > 0) {
-                        var timestamp = parseInt(instance.values[j].x / 1000);
-                        var column = Math.ceil((timestamp - data.columns[0]) / interval);
-                        //console.log("col:",column, "ts", timestamp, "first", data.columns[0], "int", interval);
-                        data.values[column][rowIdx] += instance.values[j].y;
+                    var timestamp = parseInt(instance.values[j].x / 1000);
+                    var column = Math.ceil((timestamp - data.columns[0]) / interval);
+                    // TODO: remove if bug found
+                    if (column >= data.values.length) {
+                        console.log("ERROR col:",column, "ts", timestamp, "first", data.columns[0], "int", interval);
                     }
+                    data.values[column][rowIdx] += instance.values[j].y;
                 }
             }
 
             return data;
         }
 
-        function timeFormat(ts) {
+        function timeFormat(ts, i) {
+            if (i && i % 5 != 0) {
+                return '';
+            }
+
             var d = new Date(ts * 1000);
             return  (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' +
                     (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + ':' +
@@ -101,15 +110,14 @@
             scope.flags = $rootScope.flags;
 
             var heatmap = d3.heatmap()
-                .width(element.width())
                 .margin({top: 45, right: 0, bottom: 0, left: 0})
                 .xAxisLabelFormat(timeFormat)
                 .onMouseOver(function(d, i, j) {
                     var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
                     document.getElementById(scope.id + '-details').innerText =
                         "time: " + timeFormat(scope.hmData.columns[i]) +
-                        ", range: " + startRange + " - " + scope.hmData.rows[j] +
-                        ", count: " + parseInt(d);
+                        ", range: " + startRange + " - " + scope.hmData.rows[j] + ' μs' +
+                        ", count: " + (d == null ? 'no data' : parseInt(d));
                 });
 
             scope.$on('updateMetrics', function () {
@@ -119,13 +127,15 @@
                     return;
                 }
 
+                var maxValue = Math.max(scope.hmData.maxValue, 1);
                 heatmap
+                    .width(element.width())
                     .xAxisLabels(scope.hmData.columns)
-                    .yAxisLabels(scope.hmData.rows)
                     .colorScale(d3.scaleLinear()
-                        .domain([0, scope.hmData.maxValue / 2, scope.hmData.maxValue])
+                        .domain([0, maxValue / 2, maxValue])
                         .range(['#F5F5DC', '#FF5032', '#E50914'])
                     );
+
                 d3.select("#" + scope.id + '-chart')
                     .html(null)
                     .datum(scope.hmData.values)

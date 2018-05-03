@@ -36,40 +36,11 @@
             WidgetDataModel.prototype.init.call(this);
 
             this.name = this.dataModelOptions ? this.dataModelOptions.name : 'metric_' + DashboardService.getGuid();
-
-            var latencyMetric = MetricListService.getOrCreateCumulativeMetric('bcc.disk.all.latency'),
-                derivedFunction;
-
-            derivedFunction = function () {
-                var returnValues = [],
-                    lastValue;
-
-                if (latencyMetric.data.length > 0) {
-                    for(var i = 0; i < latencyMetric.data.length; i++) {
-                        var instance = latencyMetric.data[i];
-                        if (instance.values.length > 0) {
-                            lastValue = instance.values[instance.values.length - 1];
-                            returnValues.push({
-                                timestamp: lastValue.x,
-                                key: instance.key,
-                                value: lastValue.y
-                            });
-                        }
-                    }
-                }
-
-                return returnValues;
-            };
-
-            // create derived metric
-            this.metric = latencyMetric;//MetricListService.getOrCreateDerivedMetric(this.name, derivedFunction);
+            this.metric = MetricListService.getOrCreateCumulativeMetric('bcc.disk.all.latency');
             this.updateScope(this.metric.data);
         };
 
         DataModel.prototype.destroy = function () {
-            // remove subscribers and delete derived metric
-            MetricListService.destroyDerivedMetric(this.name);
-
             // remove subscribers and delete base metrics
             MetricListService.destroyMetric('bcc.disk.all.latency');
 

@@ -58,6 +58,8 @@ var heatmap = function () {
 
   var gridStrokeOpacity = 0.6;
 
+  var noDataColor = '#CCCCCC';
+
   function click (d, i, j) {
     if (typeof clickHandler === 'function') {
       clickHandler(d, i, j);
@@ -210,6 +212,7 @@ var heatmap = function () {
             .ticks(yAxisScaleTicks)
             .tickFormat(yAxisTickFormat));
       } else {
+        var fontSize = Math.min(gridSize, 10);
         svg.selectAll('.rowLabel')
           .data(yAxisLabels)
           .enter().append('text')
@@ -217,6 +220,7 @@ var heatmap = function () {
           .attr('x', 0)
           .attr('y', function (d, i) { return i * gridSize })
           .style('text-anchor', 'end')
+          .style('font-size', fontSize + 'px')
           .attr('transform', 'translate(-6,' + gridSize / 1.2 + ')')
           .attr('class', 'rowLabel mono axis');
       }
@@ -236,14 +240,17 @@ var heatmap = function () {
             .ticks(xAxisScaleTicks)
             .tickFormat(xAxisTickFormat));
       } else {
+        var fontSize = Math.min(gridSize, 10);
+        var approxTextHeight = 1.40333 * fontSize;
         svg.selectAll('.columnLabel')
           .data(xAxisLabels)
           .enter().append('text')
           .text(xAxisLabelFormat)
-          .attr('y', function (d, i) { return i * gridSize })
+          .attr('y', function (d, i) { return (i + 1) * gridSize })
           .attr('x', 0)
           .style('text-anchor', 'beginning')
-          .attr('transform', 'translate(' + gridSize / 1.4 + ', -6) rotate(270)')
+          .style('font-size', fontSize + 'px')
+          .attr('transform', 'translate(' + -(gridSize - approxTextHeight) / 2 + ', -6) rotate(270)')
           .attr('class', 'columnLabel mono axis');
       }
     }
@@ -262,7 +269,7 @@ var heatmap = function () {
           .attr('height', gridSize)
           .style('stroke', 'white')
           .style('stroke-opacity', gridStrokeOpacity)
-          .style('fill', function (d) { return colorScale(d) })
+          .style('fill', function (d) { return d == null ? noDataColor : colorScale(d) })
           .style('pointer-events', 'all')
           .on('mouseover', function (d, j) { return mouseOver(d, i, j) })
           .on('click', function (d, j) { return click(d, i, j) });
@@ -517,6 +524,12 @@ var heatmap = function () {
   };
 
   heatmap.updateHighlight = updateHighlight;
+
+  heatmap.noDataColor = function (_) {
+    if (!arguments.length) { return noDataColor }
+    noDataColor = _;
+    return heatmap
+  };
 
   return heatmap
 };
