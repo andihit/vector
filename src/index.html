@@ -45,6 +45,13 @@
     <!-- endinject -->
     <!-- endbuild -->
 
+    <script type="text/javascript">
+        // wrapper for d3-heatmap2.js to use d3 v4 API with d3 v3
+        d3.scaleLinear = d3.scale.linear;
+        d3.axisLeft = function(x) { return d3.svg.axis().scale(x).orient('left'); }
+        d3.axisTop =  function(x) { return d3.svg.axis().scale(x).orient('top'); }
+        d3.axisBottom = function(x) { return d3.svg.axis().scale(x).orient('bottom'); }
+    </script>
     <script src="lib/d3-heatmap2/d3-heatmap2.js"></script>
 </body>
 </html>

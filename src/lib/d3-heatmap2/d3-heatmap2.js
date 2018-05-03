@@ -10,12 +10,6 @@ function cantorPair (x, y) {
 }
 
 var heatmap = function () {
-  // wrapper to use d3 v4 API with d3 v3
-  d3.scaleLinear = d3.scale.linear;
-  d3.axisLeft = function(x) { return d3.svg.axis().scale(x).orient('left'); }
-  d3.axisTop =  function(x) { return d3.svg.axis().scale(x).orient('top'); }
-  d3.axisBottom = function(x) { return d3.svg.axis().scale(x).orient('bottom'); }
-
   var svg = null;
   var columns = 0;
   var rows = 0;
@@ -58,7 +52,7 @@ var heatmap = function () {
 
   var gridStrokeOpacity = 0.6;
 
-  var noDataColor = '#CCCCCC';
+  var nullValueColor = '#CCCCCC';
 
   function click (d, i, j) {
     if (typeof clickHandler === 'function') {
@@ -199,6 +193,8 @@ var heatmap = function () {
       .append('g')
       .attr('transform', 'translate(' + calculatedMargin.left + ',' + calculatedMargin.top + ')');
 
+    var fontSize = Math.min(gridSize, 10);
+
     if (yAxisScale || yAxisLabels) {
       if (yAxisScale) {
         var y = d3.scaleLinear()
@@ -212,7 +208,6 @@ var heatmap = function () {
             .ticks(yAxisScaleTicks)
             .tickFormat(yAxisTickFormat));
       } else {
-        var fontSize = Math.min(gridSize, 10);
         svg.selectAll('.rowLabel')
           .data(yAxisLabels)
           .enter().append('text')
@@ -240,17 +235,16 @@ var heatmap = function () {
             .ticks(xAxisScaleTicks)
             .tickFormat(xAxisTickFormat));
       } else {
-        var fontSize = Math.min(gridSize, 10);
         var approxTextHeight = 1.40333 * fontSize;
         svg.selectAll('.columnLabel')
           .data(xAxisLabels)
           .enter().append('text')
           .text(xAxisLabelFormat)
-          .attr('y', function (d, i) { return (i + 1) * gridSize })
+          .attr('y', function (d, i) { return i * gridSize })
           .attr('x', 0)
           .style('text-anchor', 'beginning')
           .style('font-size', fontSize + 'px')
-          .attr('transform', 'translate(' + -(gridSize - approxTextHeight) / 2 + ', -6) rotate(270)')
+          .attr('transform', 'translate(' + (gridSize + approxTextHeight) / 2 + ', -6) rotate(270)')
           .attr('class', 'columnLabel mono axis');
       }
     }
@@ -269,7 +263,7 @@ var heatmap = function () {
           .attr('height', gridSize)
           .style('stroke', 'white')
           .style('stroke-opacity', gridStrokeOpacity)
-          .style('fill', function (d) { return d == null ? noDataColor : colorScale(d) })
+          .style('fill', function (d) { return d == null ? nullValueColor : colorScale(d) })
           .style('pointer-events', 'all')
           .on('mouseover', function (d, j) { return mouseOver(d, i, j) })
           .on('click', function (d, j) { return click(d, i, j) });
@@ -525,9 +519,9 @@ var heatmap = function () {
 
   heatmap.updateHighlight = updateHighlight;
 
-  heatmap.noDataColor = function (_) {
-    if (!arguments.length) { return noDataColor }
-    noDataColor = _;
+  heatmap.nullValueColor = function (_) {
+    if (!arguments.length) { return nullValueColor }
+    nullValueColor = _;
     return heatmap
   };
 

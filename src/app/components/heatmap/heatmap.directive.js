@@ -116,7 +116,7 @@
                     var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
                     document.getElementById(scope.id + '-details').innerText =
                         "time: " + timeFormat(scope.hmData.columns[i]) +
-                        ", range: " + startRange + " - " + scope.hmData.rows[j] + ' μs' +
+                        ", range: " + startRange + " - " + scope.hmData.rows[j] + ' us' +
                         ", count: " + (d == null ? 'no data' : parseInt(d));
                 });
 
