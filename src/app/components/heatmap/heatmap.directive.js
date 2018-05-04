@@ -76,7 +76,7 @@
                 var row = parseInt(instance.key.split('-')[1]);
                 var rowIdx = data.rows.indexOf(row);
                 if (rowIdx == -1) {
-                    // this row has no value > 0; skip immediately
+                    // this row won't be displayed; skip immediately
                     continue;
                 }
 
@@ -116,7 +116,7 @@
                     var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
                     document.getElementById(scope.id + '-details').innerText =
                         "time: " + timeFormat(scope.hmData.columns[i]) +
-                        ", range: " + startRange + " - " + scope.hmData.rows[j] + ' us' +
+                        ", range: " + startRange + " - " + scope.hmData.rows[j] + ' ' + scope.unit +
                         ", count: " + (d == null ? 'no data' : parseInt(d));
                 });
 
@@ -147,7 +147,8 @@
             restrict: 'A',
             templateUrl: 'app/components/heatmap/heatmap.html',
             scope: {
-                data: '='
+                data: '=',
+                unit: '='
             },
             link: link
         };

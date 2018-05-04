@@ -644,11 +644,10 @@
                     width: '50%',
                     height: '500px'
                 },
-                enableVerticalResize: false,
+                enableVerticalResize: true,
                 group: 'Disk',
                 attrs: {
-                    percentage: false,
-                    integer: true
+                    unit: "'us'"
                 }
             }
         ];
