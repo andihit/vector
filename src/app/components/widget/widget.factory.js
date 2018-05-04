@@ -631,24 +631,6 @@
                     percentage: false,
                     integer: true
                 }
-            }, {
-                name: 'bcc.disk.dev.latency',
-                title: 'BCC Disk Latency',
-                directive: 'heatmap',
-                dataAttrName: 'data',
-                dataModelType: BccDiskLatencyMetricDataModel,
-                dataModelOptions: {
-                    name: 'bcc.disk.dev.latency'
-                },
-                size: {
-                    width: '50%',
-                    height: '500px'
-                },
-                enableVerticalResize: true,
-                group: 'Disk',
-                attrs: {
-                    unit: "'us'"
-                }
             }
         ];
 
@@ -1142,6 +1124,28 @@
 
             );
 
+        }
+
+        if (config.enableBcc) {
+            definitions.push({
+                name: 'bcc.disk.dev.latency',
+                title: 'BCC Disk Latency',
+                directive: 'heatmap',
+                dataAttrName: 'data',
+                dataModelType: BccDiskLatencyMetricDataModel,
+                dataModelOptions: {
+                    name: 'bcc.disk.dev.latency'
+                },
+                size: {
+                    width: '50%',
+                    height: '500px'
+                },
+                enableVerticalResize: true,
+                group: 'BCC',
+                attrs: {
+                    unit: "'us'"
+                }
+            });
         }
 
         return definitions;
