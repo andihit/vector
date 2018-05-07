@@ -82,11 +82,16 @@
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
                 var rowIdx = data.rows.indexOf(row);
-                if (rowIdx == -1) continue; // this row won't be displayed; skip immediately
+                if (rowIdx == -1) {
+                    // this row won't be displayed; skip immediately
+                    continue;
+                }
 
                 for(var j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
-                    if (timestamp < data.columns[0]) continue;
+                    if (timestamp < data.columns[0]) {
+                        continue;
+                    }
 
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
                     data.values[column][rowIdx] += instance.values[j].y * interval;
