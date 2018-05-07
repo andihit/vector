@@ -21,30 +21,28 @@
 (function () {
     'use strict';
 
-    function heatmap($rootScope, D3Service) {
+    function heatmap($rootScope, $document, D3Service, UnitService) {
 
-        function parseHeatmapData(rawData) {
-            var interval = parseInt($rootScope.properties.interval);
-            var window = parseInt($rootScope.properties.window);
+        function findHeatmapMetadata(rawData) {
+            var interval = parseInt($rootScope.properties.interval),
+                window = parseInt($rootScope.properties.window);
+
             var data = {
                 rows: [],
                 columns: [],
                 values: [],
                 maxValue: 0
             };
-            var lastTimestamp = -1;
-            var maxRow = -1;
 
-            if (rawData.length == 0) {
-                return data;
-            }
+            var maxRow = -1,
+                lastTimestamp = -1;
 
-            for (let i = 0; i < rawData.length; i++) {
+            for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
                 data.rows.push(row);
 
-                for(let j = 0; j < instance.values.length; j++) {
+                for(var j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
                     if (timestamp > lastTimestamp) {
                         lastTimestamp = timestamp;
@@ -66,12 +64,24 @@
                 data.rows = data.rows.slice(data.rows.indexOf(maxRow));
             }
 
-            for (let ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
+            for (var ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
                 data.columns.push(ts);
                 data.values.push(new Array(data.rows.length).fill(null));
             }
 
-            for (let i = 0; i < rawData.length; i++) {
+            return data;
+        }
+
+        function parseHeatmapData(rawData) {
+            var interval = parseInt($rootScope.properties.interval);
+
+            if (rawData.length == 0) {
+                return data;
+            }
+
+            var data = findHeatmapMetadata(rawData, data);
+
+            for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
                 var rowIdx = data.rows.indexOf(row);
@@ -80,7 +90,7 @@
                     continue;
                 }
 
-                for(let j = 0; j < instance.values.length; j++) {
+                for(var j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
                     // TODO: remove if bug found
@@ -114,16 +124,18 @@
                 .xAxisLabelFormat(timeFormat)
                 .onMouseOver(function(d, i, j) {
                     var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
-                    document.getElementById(scope.id + '-details').innerText =
+                    var units = UnitService.convert(startRange, scope.hmData.rows[j], scope.unit);
+                    $document.find('#' + scope.id + '-details').text(
                         "time: " + timeFormat(scope.hmData.columns[i]) +
-                        ", range: " + startRange + " - " + scope.hmData.rows[j] + ' ' + scope.unit +
-                        ", count: " + (d == null ? 'no data' : parseInt(d));
+                        ", range: " + units[0] + " - " + units[1] + ' ' + units[2] +
+                        ", count: " + (d == null ? 'no data' : parseInt(d))
+                    );
                 });
 
             scope.$on('updateMetrics', function () {
                 scope.hmData = parseHeatmapData(scope.data);
                 if(scope.hmData.values.length == 0) {
-                    document.getElementById(scope.id + '-chart').innerText = "No data available.";
+                    $document.find('#' + scope.id + '-chart').text('No data available.');
                     return;
                 }
 
@@ -155,7 +167,7 @@
     }
 
     angular
-        .module('chart')
+        .module('heatmap')
         .directive('heatmap', heatmap);
 
 })();

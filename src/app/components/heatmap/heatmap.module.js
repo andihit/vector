@@ -21,7 +21,8 @@
   angular
     .module('heatmap', [
        'd3',
-       'dashboard'
+       'dashboard',
+       'unit'
     ]);
 
 })();

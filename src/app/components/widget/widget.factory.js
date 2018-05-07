@@ -1214,6 +1214,7 @@
             'cswflamegraphtask',
             'offcpuflamegraphtask',
             'offwakeflamegraphtask',
+            'heatmap',
             'customWidgetSettings',
             'customWidgetHelp',
             'widgetFilterSettings'
