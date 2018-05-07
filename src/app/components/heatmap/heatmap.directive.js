@@ -47,9 +47,6 @@
                     if (timestamp > lastTimestamp) {
                         lastTimestamp = timestamp;
                     }
-                    if (instance.values[j].y > data.maxValue) {
-                        data.maxValue = instance.values[j].y;
-                    }
                     if (instance.values[j].y > 0 && row > maxRow) {
                         maxRow = row;
                     }
@@ -64,7 +61,7 @@
                 data.rows = data.rows.slice(data.rows.indexOf(maxRow));
             }
 
-            for (var ts = lastTimestamp - window * 60; ts <= lastTimestamp; ts += interval) {
+            for (var ts = lastTimestamp - window * 60 + interval; ts <= lastTimestamp; ts += interval) {
                 data.columns.push(ts);
                 data.values.push(new Array(data.rows.length).fill(null));
             }
@@ -85,19 +82,17 @@
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
                 var rowIdx = data.rows.indexOf(row);
-                if (rowIdx == -1) {
-                    // this row won't be displayed; skip immediately
-                    continue;
-                }
+                if (rowIdx == -1) continue; // this row won't be displayed; skip immediately
 
                 for(var j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
+                    if (timestamp < data.columns[0]) continue;
+
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
-                    // TODO: remove if bug found
-                    if (column >= data.values.length) {
-                        console.log("ERROR col:",column, "ts", timestamp, "first", data.columns[0], "int", interval);
+                    data.values[column][rowIdx] += instance.values[j].y * interval;
+                    if (data.values[column][rowIdx] > data.maxValue) {
+                        data.maxValue = data.values[column][rowIdx];
                     }
-                    data.values[column][rowIdx] += instance.values[j].y;
                 }
             }
 
