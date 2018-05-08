@@ -23,90 +23,65 @@
      */
      function HeatmapService($rootScope) {
 
-        function analyzeMetadata(rawData) {
+        function analyzeMetadata(rawData, maxRow) {
             var interval = parseInt($rootScope.properties.interval),
                 window = parseFloat($rootScope.properties.window);
-
             var data = {
-                rows: [],
+                rows: [Infinity],
                 columns: [],
-                values: [],
-                maxValue: 0
+                values: []
             };
 
-            var maxRow = -1,
-                lastTimestamp = -1;
+            if (rawData.length == 0 || rawData[0].values.length == 0) {
+                return data;
+            }
 
             for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
-                data.rows.push(row);
-
-                for(var j = 0; j < instance.values.length; j++) {
-                    var timestamp = parseInt(instance.values[j].x / 1000);
-                    if (timestamp > lastTimestamp) {
-                        lastTimestamp = timestamp;
-                    }
-                    if (instance.values[j].y > 0 && row > maxRow) {
-                        maxRow = row;
-                    }
+                if (row <= maxRow) {
+                    data.rows.push(row);
                 }
             }
-
             data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
-            if (maxRow == -1) {
-                data.rows = data.rows.slice(-5); // show 5 rows per default
-            }
-            else {
-                data.rows = data.rows.slice(data.rows.indexOf(maxRow));
-            }
 
+            var firstTimestamp = parseInt(rawData[0].values[0].x / 1000);
+            var lastTimestamp = parseInt(rawData[0].values[rawData[0].values.length-1].x / 1000);
             var numCols = Math.ceil(window * 60 / interval);
-            for (var c = numCols - 1; c >= 0; c--) {
-                data.columns.push(lastTimestamp - interval * c);
-                data.values.push(new Array(data.rows.length).fill(null));
+            for (var ts = lastTimestamp - interval * (numCols - 1); ts <= lastTimestamp; ts += interval) {
+                data.columns.push(ts);
+                data.values.push(new Array(data.rows.length).fill(ts < firstTimestamp ? null : 0));
             }
 
             return data;
         }
 
-        function generate(rawData) {
+        function generate(rawData, maxRow) {
             var interval = parseInt($rootScope.properties.interval);
-
-            if (rawData.length == 0) {
-                return data;
-            }
-
-            var data = analyzeMetadata(rawData, data);
+            var data = analyzeMetadata(rawData, maxRow, data);
 
             for (var i = 0; i < rawData.length; i++) {
                 var instance = rawData[i];
                 var row = parseInt(instance.key.split('-')[1]);
-                var rowIdx = data.rows.indexOf(row);
-                if (rowIdx == -1) {
-                    // this row won't be displayed; skip immediately
-                    continue;
+                if (row > maxRow) {
+                    row = Infinity;
                 }
+                var rowIdx = data.rows.indexOf(row);
 
                 for(var j = 0; j < instance.values.length; j++) {
                     var timestamp = parseInt(instance.values[j].x / 1000);
                     if (timestamp < data.columns[0]) {
                         continue;
                     }
-
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
-                    data.values[column][rowIdx] += instance.values[j].y * interval;
-                    if (data.values[column][rowIdx] > data.maxValue) {
-                        data.maxValue = data.values[column][rowIdx];
+                    if (row === Infinity) {
+                        // Infinity bucket: sum all values
+                        data.values[column][rowIdx] += instance.values[j].y * interval;
                     }
-                }
-            }
-
-            // multiply per-second values with interval
-            for (var col = 0; col < data.values.length; col++) {
-                for (var row = 0; row < data.values[col].length; row++) {
-                    if (data.values[col][row]) {
-                        //data.values[col][row] *= interval;
+                    else {
+                        // for all other buckets: if there are more values for a single box
+                        // due to a change in interval, use the latest value
+                        data.values[column][rowIdx] = instance.values[j].y * interval;
                     }
                 }
             }

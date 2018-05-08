@@ -1143,7 +1143,9 @@
                 enableVerticalResize: true,
                 group: 'BCC',
                 attrs: {
-                    unit: "'us'"
+                    unit: "'us'",
+                    'heatmap-max-row': 4095,
+                    'heatmap-max-value': 100
                 }
             });
         }

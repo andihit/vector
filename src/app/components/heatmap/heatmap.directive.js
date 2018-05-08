@@ -37,7 +37,10 @@
         function onMouseOver(scope, d, i, j) {
             var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
             var units = UnitService.convert(startRange, scope.hmData.rows[j], scope.unit);
-            $document.find('#' + scope.id + '-details').text(
+            if (units[1] === Infinity) {
+                units[1] = '&infin;';
+            }
+            $document.find('#' + scope.id + '-details').html(
                 "time: " + timeFormat(scope.hmData.columns[i]) +
                 ", range: " + units[0] + " - " + units[1] + ' ' + units[2] +
                 ", count: " + (d == null ? 'no data' : Math.round(d))
@@ -54,18 +57,17 @@
                 .onMouseOver(onMouseOver.bind(this, scope));
 
             scope.$on('updateMetrics', function () {
-                scope.hmData = HeatmapService.generate(scope.data);
+                scope.hmData = HeatmapService.generate(scope.data, scope.heatmapMaxRow);
                 if(scope.hmData.values.length == 0) {
                     $document.find('#' + scope.id + '-chart').text('No data available.');
                     return;
                 }
 
-                var maxValue = Math.max(scope.hmData.maxValue, 1);
                 heatmap
                     .width(element.width())
                     .xAxisLabels(scope.hmData.columns)
                     .colorScale(d3.scaleLinear()
-                        .domain([0, maxValue / 2, maxValue])
+                        .domain([0, scope.heatmapMaxValue / 2, scope.heatmapMaxValue])
                         .range(['#F5F5DC', '#FF5032', '#E50914'])
                     );
 
@@ -81,7 +83,9 @@
             templateUrl: 'app/components/heatmap/heatmap.html',
             scope: {
                 data: '=',
-                unit: '='
+                unit: '=',
+                heatmapMaxRow: '=',
+                heatmapMaxValue: '='
             },
             link: link
         };
