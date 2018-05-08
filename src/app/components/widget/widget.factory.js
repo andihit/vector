@@ -1143,10 +1143,15 @@
                 enableVerticalResize: true,
                 group: 'BCC',
                 attrs: {
-                    unit: "'us'",
-                    'heatmap-max-row': 4095,
-                    'heatmap-max-value': 100
-                }
+                    unit: "'us'"
+                },
+                settingsModalOptions: {
+                    templateUrl: 'app/components/heatmap/heatmapSettings.html',
+                    controller: 'HeatmapSettingsController'
+                },
+                hasLocalSettings: true,
+                heatmapMaxRow: 4095,
+                heatmapMaxValue: 100
             });
         }
 

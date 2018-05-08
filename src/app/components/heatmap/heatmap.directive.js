@@ -57,7 +57,9 @@
                 .onMouseOver(onMouseOver.bind(this, scope));
 
             scope.$on('updateMetrics', function () {
-                scope.hmData = HeatmapService.generate(scope.data, scope.heatmapMaxRow);
+                var maxRow = scope.$parent.widget.heatmapMaxRow;
+                var maxValue = scope.$parent.widget.heatmapMaxValue;
+                scope.hmData = HeatmapService.generate(scope.data, maxRow);
                 if(scope.hmData.values.length == 0) {
                     $document.find('#' + scope.id + '-chart').text('No data available.');
                     return;
@@ -67,7 +69,7 @@
                     .width(element.width())
                     .xAxisLabels(scope.hmData.columns)
                     .colorScale(d3.scaleLinear()
-                        .domain([0, scope.heatmapMaxValue / 2, scope.heatmapMaxValue])
+                        .domain([0, maxValue / 2, maxValue])
                         .range(['#F5F5DC', '#FF5032', '#E50914'])
                     );
 
@@ -83,9 +85,7 @@
             templateUrl: 'app/components/heatmap/heatmap.html',
             scope: {
                 data: '=',
-                unit: '=',
-                heatmapMaxRow: '=',
-                heatmapMaxValue: '='
+                unit: '='
             },
             link: link
         };
