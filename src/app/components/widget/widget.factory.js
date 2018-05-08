@@ -1151,7 +1151,7 @@
                 },
                 hasLocalSettings: true,
                 heatmapMaxRow: 4095,
-                heatmapMaxValue: 100
+                heatmapMaxValue: 1000
             });
         }
 

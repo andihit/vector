@@ -24,7 +24,7 @@
     function heatmap($rootScope, $document, D3Service, HeatmapService, UnitService) {
 
         function timeFormat(ts, i) {
-            if (i && i % 5 != 0) {
+            if (i && i % 5 !== 0) {
                 return '';
             }
 
@@ -35,7 +35,7 @@
         }
 
         function onMouseOver(scope, d, i, j) {
-            var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
+            var startRange = j + 1 === scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
             var units = UnitService.convert(startRange, scope.hmData.rows[j], scope.unit);
             if (units[1] === Infinity) {
                 units[1] = '&infin;';
@@ -43,7 +43,7 @@
             $document.find('#' + scope.id + '-details').html(
                 "time: " + timeFormat(scope.hmData.columns[i]) +
                 ", range: " + units[0] + " - " + units[1] + ' ' + units[2] +
-                ", count: " + (d == null ? 'no data' : Math.round(d))
+                ", count: " + (d === null ? 'no data' : Math.round(d))
             );
         }
 
@@ -60,7 +60,7 @@
                 var maxRow = scope.$parent.widget.heatmapMaxRow;
                 var maxValue = scope.$parent.widget.heatmapMaxValue;
                 scope.hmData = HeatmapService.generate(scope.data, maxRow);
-                if(scope.hmData.values.length == 0) {
+                if(scope.hmData.values.length === 0) {
                     $document.find('#' + scope.id + '-chart').text('No data available.');
                     return;
                 }

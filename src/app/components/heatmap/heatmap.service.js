@@ -32,7 +32,7 @@
                 values: []
             };
 
-            if (rawData.length == 0 || rawData[0].values.length == 0) {
+            if (rawData.length === 0 || rawData[0].values.length === 0) {
                 return data;
             }
 
@@ -45,12 +45,11 @@
             }
             data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
 
-            var firstTimestamp = parseInt(rawData[0].values[0].x / 1000);
             var lastTimestamp = parseInt(rawData[0].values[rawData[0].values.length-1].x / 1000);
             var numCols = Math.ceil(window * 60 / interval);
             for (var ts = lastTimestamp - interval * (numCols - 1); ts <= lastTimestamp; ts += interval) {
                 data.columns.push(ts);
-                data.values.push(new Array(data.rows.length).fill(ts < firstTimestamp ? null : 0));
+                data.values.push(new Array(data.rows.length).fill(null));
             }
 
             return data;
@@ -75,7 +74,8 @@
                     }
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
                     if (row === Infinity) {
-                        // Infinity bucket: sum all values
+                        // infinity bucket: sum all values
+                        // note: will display too high values for historical data if the interval is increased
                         data.values[column][rowIdx] += instance.values[j].y * interval;
                     }
                     else {

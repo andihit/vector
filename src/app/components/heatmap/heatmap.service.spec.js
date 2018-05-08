@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable angular/definedundefined */
+
 // polyfill required for PhantomJS
 // source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fill
 if (!Array.prototype.fill) {
@@ -90,9 +92,9 @@ describe('Service: Heatmap', function() {
         expect(hmData.columns).toEqual([1525791273, 1525791275, 1525791277, 1525791279]);
         expect(hmData.values).toEqual([
             [null, null, null, null],
-            [0, 11*2, 7*2, 3*2],
-            [0, 12*2, 8*2, 4*2],
-            [0, 13*2, 9*2, 5*2]
+            [null, 11*2, 7*2, 3*2],
+            [null, 12*2, 8*2, 4*2],
+            [null, 13*2, 9*2, 5*2]
         ]);
     });
 
@@ -157,8 +159,8 @@ describe('Service: Heatmap', function() {
         expect(hmData.values).toEqual([
             [null, null, null],
             [null, null, null],
-            [0, 7*4, 3*4],
-            [0, 9*4, 5*4]
+            [null, 7*4, 3*4],
+            [null, 9*4, 5*4]
         ]);
     });
 
