@@ -61,8 +61,9 @@
                 data.rows = data.rows.slice(data.rows.indexOf(maxRow));
             }
 
-            for (var ts = lastTimestamp - window * 60 + interval; ts <= lastTimestamp; ts += interval) {
-                data.columns.push(ts);
+            var numCols = Math.ceil(window * 60 / interval);
+            for (var c = numCols - 1; c >= 0; c--) {
+                data.columns.push(lastTimestamp - interval * c);
                 data.values.push(new Array(data.rows.length).fill(null));
             }
 
@@ -97,6 +98,15 @@
                     data.values[column][rowIdx] += instance.values[j].y * interval;
                     if (data.values[column][rowIdx] > data.maxValue) {
                         data.maxValue = data.values[column][rowIdx];
+                    }
+                }
+            }
+
+            // multiply per-second values with interval
+            for (var col = 0; col < data.values.length; col++) {
+                for (var row = 0; row < data.values[col].length; row++) {
+                    if (data.values[col][row]) {
+                        //data.values[col][row] *= interval;
                     }
                 }
             }
