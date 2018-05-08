@@ -21,88 +21,7 @@
 (function () {
     'use strict';
 
-    function heatmap($rootScope, $document, D3Service, UnitService) {
-
-        function findHeatmapMetadata(rawData) {
-            var interval = parseInt($rootScope.properties.interval),
-                window = parseInt($rootScope.properties.window);
-
-            var data = {
-                rows: [],
-                columns: [],
-                values: [],
-                maxValue: 0
-            };
-
-            var maxRow = -1,
-                lastTimestamp = -1;
-
-            for (var i = 0; i < rawData.length; i++) {
-                var instance = rawData[i];
-                var row = parseInt(instance.key.split('-')[1]);
-                data.rows.push(row);
-
-                for(var j = 0; j < instance.values.length; j++) {
-                    var timestamp = parseInt(instance.values[j].x / 1000);
-                    if (timestamp > lastTimestamp) {
-                        lastTimestamp = timestamp;
-                    }
-                    if (instance.values[j].y > 0 && row > maxRow) {
-                        maxRow = row;
-                    }
-                }
-            }
-
-            data.rows.sort(function(a,b) { return b - a; }); // sort reversed numerical
-            if (maxRow == -1) {
-                data.rows = data.rows.slice(-5); // show 5 rows per default
-            }
-            else {
-                data.rows = data.rows.slice(data.rows.indexOf(maxRow));
-            }
-
-            for (var ts = lastTimestamp - window * 60 + interval; ts <= lastTimestamp; ts += interval) {
-                data.columns.push(ts);
-                data.values.push(new Array(data.rows.length).fill(null));
-            }
-
-            return data;
-        }
-
-        function parseHeatmapData(rawData) {
-            var interval = parseInt($rootScope.properties.interval);
-
-            if (rawData.length == 0) {
-                return data;
-            }
-
-            var data = findHeatmapMetadata(rawData, data);
-
-            for (var i = 0; i < rawData.length; i++) {
-                var instance = rawData[i];
-                var row = parseInt(instance.key.split('-')[1]);
-                var rowIdx = data.rows.indexOf(row);
-                if (rowIdx == -1) {
-                    // this row won't be displayed; skip immediately
-                    continue;
-                }
-
-                for(var j = 0; j < instance.values.length; j++) {
-                    var timestamp = parseInt(instance.values[j].x / 1000);
-                    if (timestamp < data.columns[0]) {
-                        continue;
-                    }
-
-                    var column = Math.ceil((timestamp - data.columns[0]) / interval);
-                    data.values[column][rowIdx] += instance.values[j].y * interval;
-                    if (data.values[column][rowIdx] > data.maxValue) {
-                        data.maxValue = data.values[column][rowIdx];
-                    }
-                }
-            }
-
-            return data;
-        }
+    function heatmap($rootScope, $document, D3Service, HeatmapService, UnitService) {
 
         function timeFormat(ts, i) {
             if (i && i % 5 != 0) {
@@ -115,6 +34,16 @@
                     (d.getSeconds() < 10 ? '0' : '') + d.getSeconds();
         }
 
+        function onMouseOver(scope, d, i, j) {
+            var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
+            var units = UnitService.convert(startRange, scope.hmData.rows[j], scope.unit);
+            $document.find('#' + scope.id + '-details').text(
+                "time: " + timeFormat(scope.hmData.columns[i]) +
+                ", range: " + units[0] + " - " + units[1] + ' ' + units[2] +
+                ", count: " + (d == null ? 'no data' : Math.round(d))
+            );
+        }
+
         function link(scope, element) {
             scope.id = D3Service.getId();
             scope.flags = $rootScope.flags;
@@ -122,18 +51,10 @@
             var heatmap = d3.heatmap()
                 .margin({top: 45, right: 0, bottom: 0, left: 0})
                 .xAxisLabelFormat(timeFormat)
-                .onMouseOver(function(d, i, j) {
-                    var startRange = j + 1 == scope.hmData.rows.length ? 0 : scope.hmData.rows[j+1] + 1;
-                    var units = UnitService.convert(startRange, scope.hmData.rows[j], scope.unit);
-                    $document.find('#' + scope.id + '-details').text(
-                        "time: " + timeFormat(scope.hmData.columns[i]) +
-                        ", range: " + units[0] + " - " + units[1] + ' ' + units[2] +
-                        ", count: " + (d == null ? 'no data' : parseInt(d))
-                    );
-                });
+                .onMouseOver(onMouseOver.bind(this, scope));
 
             scope.$on('updateMetrics', function () {
-                scope.hmData = parseHeatmapData(scope.data);
+                scope.hmData = HeatmapService.generate(scope.data);
                 if(scope.hmData.values.length == 0) {
                     $document.find('#' + scope.id + '-chart').text('No data available.');
                     return;
