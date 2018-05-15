@@ -23,7 +23,7 @@
     * @name BccDiskLatencyMetricDataModel
     * @desc
     */
-    function BccDiskLatencyMetricDataModel(WidgetDataModel, MetricListService, DashboardService) {
+    function BccDiskLatencyMetricDataModel(WidgetDataModel, MetricListService, DashboardService, $rootScope) {
         var DataModel = function () {
             return this;
         };
@@ -36,11 +36,17 @@
             this.name = this.dataModelOptions ? this.dataModelOptions.name : 'metric_' + DashboardService.getGuid();
             this.metric = MetricListService.getOrCreateCumulativeMetric('bcc.disk.all.latency');
             this.updateScope(this.metric.data);
+
+            this.removeIntervalWatcher = $rootScope.$watch('properties.interval', function() {
+                this.metric.clearData();
+            }.bind(this));
         };
 
         DataModel.prototype.destroy = function () {
             // remove subscribers and delete base metrics
             MetricListService.destroyMetric('bcc.disk.all.latency');
+
+            this.removeIntervalWatcher();
 
             WidgetDataModel.prototype.destroy.call(this);
         };

@@ -47,6 +47,10 @@
             );
         }
 
+        function onMouseOut(scope) {
+            $document.find('#' + scope.id + '-details').empty();
+        }
+
         function link(scope, element) {
             scope.id = D3Service.getId();
             scope.flags = $rootScope.flags;
@@ -54,7 +58,8 @@
             var heatmap = d3.heatmap()
                 .margin({top: 45, right: 0, bottom: 0, left: 0})
                 .xAxisLabelFormat(timeFormat)
-                .onMouseOver(onMouseOver.bind(this, scope));
+                .onMouseOver(onMouseOver.bind(this, scope))
+                .onMouseOut(onMouseOut.bind(this, scope));
 
             scope.$on('updateMetrics', function () {
                 var maxRow = scope.$parent.widget.heatmapMaxRow;
@@ -62,6 +67,7 @@
                 scope.hmData = HeatmapService.generate(scope.data, maxRow);
                 if(scope.hmData.values.length === 0) {
                     $document.find('#' + scope.id + '-chart').text('No data available.');
+                    $document.find('#' + scope.id + '-details').empty();
                     return;
                 }
 

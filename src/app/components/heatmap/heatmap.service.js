@@ -74,13 +74,9 @@
                     }
                     var column = Math.ceil((timestamp - data.columns[0]) / interval);
                     if (row === Infinity) {
-                        // infinity bucket: sum all values
-                        // note: will display too high values for historical data if the interval is increased
                         data.values[column][rowIdx] += instance.values[j].y * interval;
                     }
                     else {
-                        // for all other buckets: if there are more values for a single box
-                        // due to a change in interval, use the latest value
                         data.values[column][rowIdx] = instance.values[j].y * interval;
                     }
                 }
