@@ -1,11 +1,17 @@
+%global vector_version 2.0.0-beta.1
+
 Name:           vector
 Version:        2.0.0
 Release:        0.1.beta.1
-Summary:        On-host performance monitoring framework which exposes hand picked high resolution metrics to every engineer's browser
+Summary:        On-host performance monitoring framework
 
 License:        ASL 2.0
 URL:            https://github.com/Netflix/vector
-Source0:        https://github.com/Netflix/vector/archive/v%{version}-beta.1.tar.gz
+Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
+Source1:        vector_webpack-%{vector_version}.tar.gz
+Source2:        make_webpack.sh
+
+Patch0:         000-RPM-spec-and-webpack.patch
 
 BuildArch:      noarch
 BuildRequires:  npm
@@ -19,12 +25,13 @@ performance issues.
 
 
 %prep
-%autosetup -n %{name}-%{version}-beta.1
+%setup -q -T -D -b 0 -n vector-%{vector_version}
+%setup -q -T -D -b 1 -n vector-%{vector_version}
+%patch0 -p1
 
 
 %build
-npm install
-npm run build-prod
+true
 
 
 %install
@@ -41,5 +48,5 @@ cp -aT dist %{buildroot}%{_datadir}/%{name}
 
 
 %changelog
-* Wed May  8 2019 Andreas Gerstmayr <agerstmayr@redhat.com>
+* Wed May  8 2019 Andreas Gerstmayr <agerstmayr@redhat.com> 2.0.0-0.1.beta.1
 - initial Vector package
