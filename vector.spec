@@ -1,3 +1,5 @@
+%global vector_version 2.0.0-beta.1
+
 Name:           vector
 Version:        2.0.0
 Release:        0.1.beta.1
@@ -5,8 +7,8 @@ Summary:        On-host performance monitoring framework
 
 License:        ASL 2.0
 URL:            https://github.com/Netflix/vector
-Source0:        https://github.com/Netflix/vector/archive/v%{version}-beta.1.tar.gz
-Source1:        vector_webpack-%{version}.tar.gz
+Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
+Source1:        vector_webpack-%{vector_version}.tar.gz
 Source2:        make_webpack.sh
 
 Patch0:         000-RPM-spec-and-webpack.patch
@@ -23,9 +25,10 @@ performance issues.
 
 
 %prep
-%setup -q -T -D -b 0
-%setup -q -T -D -b 1
+%setup -q -T -D -b 0 -n vector-%{vector_version}
+%setup -q -T -D -b 1 -n vector-%{vector_version}
 %patch0 -p1
+
 
 %build
 true

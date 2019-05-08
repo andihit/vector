@@ -19,11 +19,11 @@
 VER=$1
 TMP=$(mktemp -d)
 
-pushd $TMP
-git clone --branch v$VER https://github.com/Netflix/vector
-cd vector
+pushd "$TMP"
+git clone --branch v$VER https://github.com/Netflix/vector vector-$VER
+cd vector-$VER
 npm install
 node_modules/webpack/bin/webpack.js --display-error-details --config webpack.prod.js
 popd
 
-tar czf vector_webpack-$VER.tar.gz -C "$TMP/vector/dist" .
+tar czf vector_webpack-$VER.tar.gz -C "$TMP" vector-$VER/dist
