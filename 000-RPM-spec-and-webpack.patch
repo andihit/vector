@@ -1,0 +1,93 @@
+diff --git a/build/rpm/make_webpack.sh b/build/rpm/make_webpack.sh
+new file mode 100755
+index 0000000..545f64c
+--- /dev/null
++++ b/build/rpm/make_webpack.sh
+@@ -0,0 +1,29 @@
++#!/bin/bash
++#
++# Copyright (c) 2019 Red Hat.
++#
++# This program is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License as published by the
++# Free Software Foundation; either version 2 of the License, or (at your
++# option) any later version.
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++# for more details.
++#
++
++: ${1?"Usage: $0 version"}
++
++
++VER=$1
++TMP=$(mktemp -d)
++
++pushd "$TMP"
++git clone --branch v$VER https://github.com/Netflix/vector vector-$VER
++cd vector-$VER
++npm install
++node_modules/webpack/bin/webpack.js --display-error-details --config webpack.prod.js
++popd
++
++tar czf vector_webpack-$VER.tar.gz -C "$TMP" vector-$VER/dist
+diff --git a/build/rpm/vector.spec b/build/rpm/vector.spec
+new file mode 100644
+index 0000000..1e50ad6
+--- /dev/null
++++ b/build/rpm/vector.spec
+@@ -0,0 +1,52 @@
++%global vector_version 2.0.0-beta.1
++
++Name:           vector
++Version:        2.0.0
++Release:        0.1.beta.1
++Summary:        On-host performance monitoring framework
++
++License:        ASL 2.0
++URL:            https://github.com/Netflix/vector
++Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
++Source1:        vector_webpack-%{vector_version}.tar.gz
++Source2:        make_webpack.sh
++
++Patch0:         000-RPM-spec-and-webpack.patch
++
++BuildArch:      noarch
++BuildRequires:  npm
++
++%description
++Vector is an open source on-host performance monitoring framework which exposes
++hand picked high resolution system and application metrics to every engineer’s
++browser. Having the right metrics available on-demand and at a high resolution
++is key to understand how a system behaves and correctly troubleshoot
++performance issues.
++
++
++%prep
++%setup -q -T -D -b 0 -n vector-%{vector_version}
++%setup -q -T -D -b 1 -n vector-%{vector_version}
++%patch0 -p1
++
++
++%build
++true
++
++
++%install
++install -d %{buildroot}%{_datadir}/%{name}
++cp -aT dist %{buildroot}%{_datadir}/%{name}
++
++
++%files
++%dir %{_datadir}/%{name}
++%{_datadir}/%{name}
++
++%license LICENSE
++%doc CHANGELOG.md README.md
++
++
++%changelog
++* Wed May  8 2019 Andreas Gerstmayr <agerstmayr@redhat.com> 2.0.0-0.1.beta.1
++- initial Vector package
