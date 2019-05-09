@@ -1,0 +1,10 @@
+# vector
+
+location = /vector {
+    alias /usr/share/vector/;
+}
+
+location /vector/ {
+    root /usr/share;
+    index index.html;
+}

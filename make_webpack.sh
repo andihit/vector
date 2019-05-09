@@ -27,3 +27,4 @@ node_modules/webpack/bin/webpack.js --display-error-details --config webpack.pro
 popd
 
 tar czf vector_webpack-$VER.tar.gz -C "$TMP" vector-$VER/dist
+tar czf vector_testlibs-$VER.tar.gz -C "$TMP" vector-$VER/node_modules
