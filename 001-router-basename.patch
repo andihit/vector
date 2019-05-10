@@ -1,0 +1,145 @@
+diff --git a/package.json b/package.json
+index 30d4cf9..3720082 100644
+--- a/package.json
++++ b/package.json
+@@ -80,7 +80,8 @@
+   "jest": {
+     "moduleNameMapper": {
+       "\\.(css|less|sass|scss)$": "<rootDir>/test/__mocks__/styleMock.js",
+-      "\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/fileMock.js"
++      "\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/fileMock.js",
++      "^config$": "<rootDir>/src/config.js"
+     },
+     "transform": {
+       "^.+\\.jsx$": "babel-jest",
+diff --git a/src/app/App.jsx b/src/app/App.jsx
+index da8ec45..66ad341 100644
+--- a/src/app/App.jsx
++++ b/src/app/App.jsx
+@@ -34,7 +34,7 @@ if (process.env.NODE_ENV !== 'production') {
+ 
+ import { render } from 'react-dom'
+ 
+-import config from './config'
++import config from 'config'
+ 
+ import Navbar from './components/Navbar/Navbar.jsx'
+ import Footer from './components/Footer/Footer.jsx'
+@@ -215,7 +215,7 @@ class App extends React.Component {
+                 updateChartSettings={this.updateChartSettings}
+                 onMoveChart={this.onMoveChart} />
+ 
+-              <Footer version={config.version}/>
++              <Footer version='[AIV]{version}[/AIV]'/>
+ 
+             </Sidebar.Pusher>
+ 
+@@ -254,7 +254,7 @@ class PageRouter extends React.Component {
+ 
+   render () {
+     return (
+-      <BrowserRouter>
++      <BrowserRouter basename={config.basename}>
+         <Switch>
+           <Route path="/embed" render={this.AppEmbed}/>
+           <Route path="/" render={this.AppNormal}/>
+diff --git a/src/app/charts/index.js b/src/app/charts/index.js
+index 3a52b8b..953b864 100644
+--- a/src/app/charts/index.js
++++ b/src/app/charts/index.js
+@@ -19,7 +19,7 @@
+ /* eslint-disable */
+ 
+ import { flatten } from '../utils'
+-import config from '../config'
++import config from 'config'
+ 
+ // all the remaining components, particularly vector specific angular components
+ function requireAll(requireContext) {
+diff --git a/src/app/components/Charts/Flamegraph.jsx b/src/app/components/Charts/Flamegraph.jsx
+index ba5ffb6..9684fe8 100644
+--- a/src/app/components/Charts/Flamegraph.jsx
++++ b/src/app/components/Charts/Flamegraph.jsx
+@@ -24,8 +24,7 @@ import { Button, Form } from 'semantic-ui-react'
+ 
+ const TIMEOUTS = { response: 5000, deadline: 10000 }
+ 
+-// TODO ugh how do we get this cleanly
+-import config from '../../config'
++import config from 'config'
+ 
+ function getStatusFromDataset(dataset) {
+   // oh for the ?. operator
+diff --git a/src/app/index.html b/src/app/index.html
+index 07fc326..043b1b2 100644
+--- a/src/app/index.html
++++ b/src/app/index.html
+@@ -7,6 +7,7 @@
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+ 
+     <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600" rel="stylesheet" />
++    <script type="text/javascript" src="config.js"></script>
+ </head>
+ <body>
+   <div id="app"></div>
+diff --git a/src/app/utils/index.js b/src/app/utils/index.js
+index 68a2d34..be66fbf 100644
+--- a/src/app/utils/index.js
++++ b/src/app/utils/index.js
+@@ -18,7 +18,7 @@
+ 
+ import superagent from 'superagent'
+ import { parse } from 'query-string'
+-import config from '../config'
++import config from 'config'
+ 
+ /////////////////////////////////////
+ // window.location handling support
+diff --git a/src/app/config.js b/src/config.js
+similarity index 94%
+rename from src/app/config.js
+rename to src/config.js
+index 8f47f5d..0bb0704 100644
+--- a/src/app/config.js
++++ b/src/config.js
+@@ -16,8 +16,8 @@
+  *
+  */
+ 
+-export default {
+-  version: '[AIV]{version}[/AIV]', // version number, auto loaded by webpack from package.json
++const config = {
++  basename: '/',
+   protocol: 'http', // PMWEBD protocol (http or https)
+ 
+   dataWindows: [
+@@ -47,3 +47,7 @@ export default {
+ 
+   // TODO what about container name resolver
+ }
++
++if (typeof module !== 'undefined') {
++  module.exports = config;
++}
+diff --git a/webpack.common.js b/webpack.common.js
+index d3dda6a..d7671da 100644
+--- a/webpack.common.js
++++ b/webpack.common.js
+@@ -14,6 +14,9 @@ module.exports = {
+         filename: 'scripts/bundle.js',
+         publicPath: ''
+     },
++    externals: {
++        config: 'config'
++    },
+     module: {
+         rules: [
+             {
+@@ -85,6 +88,7 @@ module.exports = {
+         }),
+         // copy static assets
+         new CopyWebpackPlugin([
++            { from: 'src/config.js', to: 'config.js' },
+             { from: 'src/favicon.ico', to: 'favicon.ico' },
+             { from: 'src/assets/images/vector_owl.png', to: 'assets/images/vector_owl.png' }
+         ])

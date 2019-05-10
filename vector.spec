@@ -6,7 +6,7 @@ Release:        0.1.beta.1
 Summary:        On-host performance monitoring framework
 
 License:        ASL 2.0
-URL:            https://github.com/Netflix/vector
+URL:            https://getvector.io
 Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
 Source1:        vector_webpack-%{vector_version}.tar.gz
 Source2:        vector_testlibs-%{vector_version}.tar.gz
@@ -14,7 +14,10 @@ Source3:        vector-httpd-conf
 Source4:        vector-nginx-conf
 Source5:        make_webpack.sh
 
-Patch0:         000-RPM-spec-and-webpack.patch
+Patch0:         000-update-npm-packages.patch
+Patch1:         001-router-basename.patch
+Patch2:         002-update-default-config.patch
+Patch3:         003-RPM-spec-and-webpack.patch
 
 BuildArch:      noarch
 BuildRequires:  nodejs
@@ -37,8 +40,10 @@ performance issues.
 %setup -q -T -D -b 1 -n vector-%{vector_version}
 %setup -q -T -D -b 2 -n vector-%{vector_version}
 
-
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
 
 
 %build

@@ -1,9 +1,9 @@
 diff --git a/build/rpm/make_webpack.sh b/build/rpm/make_webpack.sh
 new file mode 100755
-index 0000000..545f64c
+index 0000000..ebdebce
 --- /dev/null
 +++ b/build/rpm/make_webpack.sh
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,39 @@
 +#!/bin/bash
 +#
 +# Copyright (c) 2019 Red Hat.
@@ -18,27 +18,37 @@ index 0000000..545f64c
 +# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 +# for more details.
 +#
++set -e
 +
 +: ${1?"Usage: $0 version"}
 +
-+
 +VER=$1
++shift
++PATCHES=$(echo $* | xargs --no-run-if-empty realpath)
 +TMP=$(mktemp -d)
 +
 +pushd "$TMP"
 +git clone --branch v$VER https://github.com/Netflix/vector vector-$VER
 +cd vector-$VER
++
++for patch in $PATCHES
++do
++    echo Applying patch $patch
++    patch -p1 < $patch
++done
++
 +npm install
 +node_modules/webpack/bin/webpack.js --display-error-details --config webpack.prod.js
 +popd
 +
 +tar czf vector_webpack-$VER.tar.gz -C "$TMP" vector-$VER/dist
++tar czf vector_testlibs-$VER.tar.gz -C "$TMP" vector-$VER/node_modules
 diff --git a/build/rpm/vector.spec b/build/rpm/vector.spec
 new file mode 100644
-index 0000000..1e50ad6
+index 0000000..a4c899e
 --- /dev/null
 +++ b/build/rpm/vector.spec
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,79 @@
 +%global vector_version 2.0.0-beta.1
 +
 +Name:           vector
@@ -47,15 +57,26 @@ index 0000000..1e50ad6
 +Summary:        On-host performance monitoring framework
 +
 +License:        ASL 2.0
-+URL:            https://github.com/Netflix/vector
++URL:            https://getvector.io
 +Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
 +Source1:        vector_webpack-%{vector_version}.tar.gz
-+Source2:        make_webpack.sh
++Source2:        vector_testlibs-%{vector_version}.tar.gz
++Source3:        vector-httpd-conf
++Source4:        vector-nginx-conf
++Source5:        make_webpack.sh
 +
-+Patch0:         000-RPM-spec-and-webpack.patch
++Patch0:         000-update-npm-packages.patch
++Patch1:         001-router-basename.patch
++Patch2:         002-update-default-config.patch
++Patch3:         003-RPM-spec-and-webpack.patch
 +
 +BuildArch:      noarch
-+BuildRequires:  npm
++BuildRequires:  nodejs
++
++Requires:	httpd-filesystem
++Requires:	nginx-filesystem
++Suggests:	httpd
++
 +
 +%description
 +Vector is an open source on-host performance monitoring framework which exposes
@@ -68,7 +89,12 @@ index 0000000..1e50ad6
 +%prep
 +%setup -q -T -D -b 0 -n vector-%{vector_version}
 +%setup -q -T -D -b 1 -n vector-%{vector_version}
++%setup -q -T -D -b 2 -n vector-%{vector_version}
++
 +%patch0 -p1
++%patch1 -p1
++%patch2 -p1
++%patch3 -p1
 +
 +
 +%build
@@ -79,10 +105,21 @@ index 0000000..1e50ad6
 +install -d %{buildroot}%{_datadir}/%{name}
 +cp -aT dist %{buildroot}%{_datadir}/%{name}
 +
++# webserver configurations
++install -D -p -m 0644 %{_sourcedir}/vector-httpd-conf %{buildroot}%{_sysconfdir}/httpd/conf.d/%{name}.conf
++install -D -p -m 0644 %{_sourcedir}/vector-nginx-conf %{buildroot}%{_sysconfdir}/nginx/default.d/%{name}.conf
++
++
++%check
++node_modules/jest/bin/jest.js
++
 +
 +%files
 +%dir %{_datadir}/%{name}
 +%{_datadir}/%{name}
++
++%config(noreplace) %{_sysconfdir}/httpd/conf.d/%{name}.conf
++%config(noreplace) %{_sysconfdir}/nginx/default.d/%{name}.conf
 +
 +%license LICENSE
 +%doc CHANGELOG.md README.md

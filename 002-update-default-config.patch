@@ -1,0 +1,20 @@
+--- a/dist/config.js	2019-05-10 14:46:57.004828910 +0200
++++ b/dist/config.js	2019-05-10 16:27:46.347346850 +0200
+@@ -17,7 +17,7 @@
+  */
+ 
+ const config = {
+-  basename: '/',
++  basename: '/vector',
+   protocol: 'http', // PMWEBD protocol (http or https)
+ 
+   dataWindows: [
+@@ -39,7 +39,7 @@
+   enableBcc: true, // Enable BCC widgets (requires BCC PMDA)
+   enableFlamegraphs: true, // Enable Flamegraph widgets (requires custom PMDA)
+ 
+-  defaultPort: 7402, // PMWEBD port
++  defaultPort: 44323, // PMWEBD port
+   defaultHostspec: 'localhost', // Default PMCD hostspec
+   disableHostspecInput: true, // Disable hostspec input
+   disableContainerSelect: false, // Disable container name drop down select

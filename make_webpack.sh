@@ -12,16 +12,25 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 #
+set -e
 
 : ${1?"Usage: $0 version"}
 
-
 VER=$1
+shift
+PATCHES=$(echo $* | xargs --no-run-if-empty realpath)
 TMP=$(mktemp -d)
 
 pushd "$TMP"
 git clone --branch v$VER https://github.com/Netflix/vector vector-$VER
 cd vector-$VER
+
+for patch in $PATCHES
+do
+    echo Applying patch $patch
+    patch -p1 < $patch
+done
+
 npm install
 node_modules/webpack/bin/webpack.js --display-error-details --config webpack.prod.js
 popd
