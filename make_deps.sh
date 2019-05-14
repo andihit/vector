@@ -34,4 +34,4 @@ done
 npm install
 popd
 
-tar czf vector_webpack-$VER.tar.gz -C "$TMP" vector-$VER/node_modules
+tar czf vector_deps-$VER.tar.gz -C "$TMP" vector-$VER/node_modules

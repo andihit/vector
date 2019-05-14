@@ -1,34 +1,35 @@
+%global debug_package %{nil}
 %global vector_version 2.0.0-beta.1
 
 Name:           vector
 Version:        2.0.0
-Release:        0.1.beta.1
+Release:        0.1.beta.1%{?dist}
 Summary:        On-host performance monitoring framework
 
 License:        ASL 2.0
 URL:            https://getvector.io
 Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
-Source1:        vector_webpack-%{vector_version}.tar.gz
+Source1:        vector_deps-%{vector_version}.tar.gz
 Source2:        vector-httpd-conf
 Source3:        vector-nginx-conf
-Source4:        make_webpack.sh
+Source4:        make_deps.sh
 
 Patch0:         000-update-npm-packages.patch
 Patch1:         001-router-basename.patch
 Patch2:         002-update-default-config.patch
-Patch3:         003-RPM-spec-and-webpack.patch
+Patch3:         003-RPM-spec-and-make_deps.patch
 
-BuildArch:      noarch
-BuildRequires:  nodejs
+ExclusiveArch: %{nodejs_arches} noarch
 
 Requires:       httpd-filesystem
 Requires:       nginx-filesystem
 Suggests:       httpd
+BuildRequires:  nodejs
 
-# Declare all nodejs modules bundled in the webpack - this is for security
-# purposes so if nodejs-foo ever needs an update, affected packages can be
-# easily identified. This is generated from package.json, with the actual
-# version numbers from package-lock.json.
+# Declare all bundled nodejs modules - this is for security purposes so if
+# nodejs-foo ever needs an update, affected packages can be easily identified.
+# This is generated from package.json, with the actual version numbers from
+# package-lock.json.
 Provides: bundled(nodejs-babel-core) = 6.26.3
 Provides: bundled(nodejs-babel-eslint) = 8.2.5
 Provides: bundled(nodejs-babel-jest) = 23.2.0
