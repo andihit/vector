@@ -34,4 +34,4 @@ done
 npm install
 popd
 
-tar czf vector_deps-$VER.tar.gz -C "$TMP" vector-$VER/node_modules
+XZ_OPT=-9 tar cJf vector_deps-$VER.tar.xz -C "$TMP" vector-$VER/node_modules

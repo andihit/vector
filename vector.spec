@@ -9,7 +9,7 @@ Summary:        On-host performance monitoring framework
 License:        ASL 2.0
 URL:            https://getvector.io
 Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
-Source1:        vector_deps-%{vector_version}.tar.gz
+Source1:        vector_deps-%{vector_version}.tar.xz
 Source2:        vector-httpd-conf
 Source3:        vector-nginx-conf
 Source4:        make_deps.sh

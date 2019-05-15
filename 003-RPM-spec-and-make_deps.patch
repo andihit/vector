@@ -40,7 +40,7 @@ index 0000000..9e58998
 +npm install
 +popd
 +
-+tar czf vector_deps-$VER.tar.gz -C "$TMP" vector-$VER/node_modules
++XZ_OPT=-9 tar cJf vector_deps-$VER.tar.xz -C "$TMP" vector-$VER/node_modules
 diff --git a/build/rpm/vector.spec b/build/rpm/vector.spec
 new file mode 100644
 index 0000000..337ee82
@@ -58,7 +58,7 @@ index 0000000..337ee82
 +License:        ASL 2.0
 +URL:            https://getvector.io
 +Source0:        https://github.com/Netflix/vector/archive/v%{vector_version}/vector-%{vector_version}.tar.gz
-+Source1:        vector_deps-%{vector_version}.tar.gz
++Source1:        vector_deps-%{vector_version}.tar.xz
 +Source2:        vector-httpd-conf
 +Source3:        vector-nginx-conf
 +Source4:        make_deps.sh
